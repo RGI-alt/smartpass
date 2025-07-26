@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartPass Web</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; background: #f1f5f9; color: #111; }
+    h1 { color: #0f172a; }
+    input, textarea { width: 100%; padding: 8px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccc; }
+    button { background: #2563eb; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #1e40af; }
+    #result { margin-top: 20px; font-size: 18px; font-weight: bold; }
+    #entropy { color: #555; }
+  </style>
+</head>
+<body>
+  <h1>🔐 SmartPass: Military-Grade Password Generator</h1>
+  <label>Enter 3+ Personal Words:</label>
+  <input type="text" id="personalWords" placeholder="e.g. Wife, Child, Car" />
+
+  <label>Custom Rare Words (optional, comma-separated):</label>
+  <input type="text" id="rareWords" placeholder="e.g. Zephyrus, Aegis, Solstice" />
+
+  <button onclick="generatePassword()">Generate Password</button>
+
+  <div id="result"></div>
+  <div id="entropy"></div>
+
+  <script>
+    const substitutions = {
+      'a': ['@', '4'], 'e': ['3'], 'i': ['1', '!'],
+      'o': ['0'], 's': ['$', '5'], 't': ['7'], 'u': ['U', 'µ']
+    };
+
+    function leetify(word) {
+      return word.split('').map(c => {
+        const options = substitutions[c.toLowerCase()];
+        return options ? options[Math.floor(Math.random() * options.length)] : c;
+      }).join('');
+    }
+
+    function estimateEntropy(password) {
+      let charset = 0;
+      if (/[a-z]/.test(password)) charset += 26;
+      if (/[A-Z]/.test(password)) charset += 26;
+      if (/[0-9]/.test(password)) charset += 10;
+      if (/[^a-zA-Z0-9]/.test(password)) charset += 32;
+      return Math.round(password.length * Math.log2(charset));
+    }
+
+    function generatePassword() {
+      const input = document.getElementById("personalWords").value.trim().split(/\s+/);
+      if (input.length < 3) {
+        alert("Please enter at least 3 personal words.");
+        return;
+      }
+
+      const rareInput = document.getElementById("rareWords").value.trim();
+      const rares = rareInput ? rareInput.split(',').map(w => w.trim()) : ['Vayu', 'Shastra', 'Krypton', 'Anveshak', 'Prithvi', 'Rudra', 'Zypher'];
+
+      const selected = input.sort(() => 0.5 - Math.random()).slice(0, 3);
+      const word1 = leetify(selected[0]);
+      const word2 = leetify(selected[1]);
+      const word3 = leetify(selected[2]);
+      const rare = rares[Math.floor(Math.random() * rares.length)];
+      const sym1 = randomChar("!@#$%^&*()-_=+[]{}");
+      const sym2 = randomChar("!@#$%^&*()-_=+[]{}");
+      const num = Math.floor(Math.random() * 90 + 10); // 2 digits
+      const finalPass = `${word1}${sym1}${word2}${num}${rare}${sym2}${word3}`;
+
+      document.getElementById("result").innerText = `🔐 Password: ${finalPass}`;
+      document.getElementById("entropy").innerText = `🔒 Estimated Entropy: ${estimateEntropy(finalPass)} bits`;
+    }
+
+    function randomChar(chars) {
+      return chars[Math.floor(Math.random() * chars.length)];
+    }
+  </script>
+</body>
+</html>
